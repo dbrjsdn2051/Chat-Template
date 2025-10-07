@@ -18,4 +18,8 @@ class MemberRepositoryImpl : MemberRepository {
     override fun findByEmail(email: String): Member? = transaction {
         Member.find { Members.email eq email }.firstOrNull()
     }
+
+    override fun findAll(): List<Member> = transaction {
+        Member.all().toList()
+    }
 }

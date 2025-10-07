@@ -14,3 +14,7 @@ spring:
       host: localhost
       port: 6379
 
+
+jwt:
+  secretKey: M2Y4ZDJlNzFiYzRhNTZkOGU5ZjBhM2I3YzVkNmU4ZjFhMmI0YzZkOGUwZjJhNGI2YzhlMGYyYTRiNmM4
+  expiration: 3000

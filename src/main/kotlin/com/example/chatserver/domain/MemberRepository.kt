@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 interface MemberRepository {
     fun save(memberSaveReqDto: MemberSaveReqDto): Member
     fun findByEmail(email: String): Member?
+    fun findAll(): List<Member>
 }
