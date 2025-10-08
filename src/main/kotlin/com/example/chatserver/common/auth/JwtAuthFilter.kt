@@ -42,7 +42,10 @@ class JwtAuthFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        if (request.requestURI.contains("/member/create") || request.requestURI.contains("/member/doLogin")) {
+        if (request.requestURI.contains("/member/create") ||
+            request.requestURI.contains("/member/doLogin") ||
+            request.requestURI.contains("/connect")
+        ) {
             filterChain.doFilter(request, response)
             return
         }

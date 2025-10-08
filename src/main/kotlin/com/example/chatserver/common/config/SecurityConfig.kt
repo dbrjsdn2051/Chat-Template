@@ -25,7 +25,7 @@ class SecurityConfig(
             .httpBasic { it.disable() }
             .authorizeHttpRequests {
                 it
-                    .requestMatchers("/member/create", "/member/doLogin").permitAll()
+                    .requestMatchers("/member/create", "/member/doLogin", "/connect/**").permitAll()
                     .anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
