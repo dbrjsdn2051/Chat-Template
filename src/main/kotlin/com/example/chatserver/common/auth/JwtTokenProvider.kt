@@ -16,6 +16,11 @@ class JwtTokenProvider(
     @Value("\${jwt.expiration}")
     private val expiration: Int,
 ) {
+
+    companion object {
+        const val ROLE_CLAIM = "role"
+    }
+
     private val key: Key by lazy {
         SecretKeySpec(java.util.Base64.getDecoder().decode(secretKey), SignatureAlgorithm.HS256.jcaName)
     }
@@ -26,10 +31,40 @@ class JwtTokenProvider(
 
         return Jwts.builder()
             .setSubject(email)
-            .claim("role", role.name)
+            .claim(ROLE_CLAIM, role.name)
             .setIssuedAt(now)
             .setExpiration(expirationDate)
             .signWith(key, SignatureAlgorithm.HS256)
             .compact()
+    }
+
+    fun validateToken(token: String): Boolean {
+        return try {
+            Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+            true
+        } catch (e: Exception) {
+            println("token invalid: ${e.message}")
+            false
+        }
+    }
+
+    fun getEmailFromToken(token: String): String {
+        return Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .body
+            .subject ?: throw IllegalArgumentException("email is null")
+    }
+
+    fun getRoleFromToken(token: String): String {
+        return Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .body[ROLE_CLAIM] as? String ?: throw IllegalArgumentException("role is null")
     }
 }
