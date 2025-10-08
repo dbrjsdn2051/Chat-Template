@@ -8,8 +8,8 @@
           </v-card-title>
           <v-card-text>
             <div class="chat-box">
-              <div v-for="(msg, index) in messages" :key="index">
-                {{ msg }}
+              <div v-for="(msg, index) in messages" :key="index" :class="['chat-message', msg.senderEmail === senderEmail ? 'chat-message-me' : 'chat-message-other']">
+                <strong> {{msg.senderEmail }}: </strong> {{msg.message}}
               </div>
             </div>
             <v-text-field v-model="newMessage" label="메시지 입력" @keyup.enter="sendMessage"/>
@@ -31,22 +31,32 @@ export default {
       messages: [],
       newMessage: '',
       stompClient: null,
+      token: '' ,
+      senderEmail: null,
     }
   },
   created() {
+    this.senderEmail = localStorage.getItem('email');
+    this.token = localStorage.getItem('token');
     this.connectWebsocket();
+  },
+  beforeRouteLeave(to, from, next){
+    this.disconnectWebsocket();
   },
   beforeUnmount() {
     this.disconnectWebsocket();
   },
   methods: {
     connectWebsocket() {
+      if(this.stompClient && this.stompClient.connected) return;
       const sockJs = new SockJS(`${import.meta.env.VITE_API_BASE_URL}/connect`);
       this.stompClient = Stomp.over(sockJs);
-      this.stompClient.connect({}, (frame) => {
+      this.stompClient.connect({
+        Authorization: `Bearer ${this.token}`
+      }, (frame) => {
         console.log("successfully connected to websocket server")
-        this.stompClient.subscribe(`/topic/${1}`, (message) => {
-          const parsedMessage = JSON.parse(message.body);
+        this.stompClient.subscribe(`/topic/${1}`, (res) => {
+          const parsedMessage = JSON.parse(res.body);
           this.messages.push(parsedMessage);
           this.scrollToBottom();
         })
@@ -54,7 +64,11 @@ export default {
     },
     sendMessage() {
       if (this.newMessage.trim() === '') return;
-      this.stompClient.send(`/publish/${1}`, JSON.stringify(this.newMessage));
+      const message = {
+        message: this.newMessage,
+        senderEmail: this.senderEmail,
+      }
+      this.stompClient.send(`/publish/${1}`, JSON.stringify(message));
       this.newMessage = '';
     },
     scrollToBottom() {
@@ -64,11 +78,12 @@ export default {
       })
     },
     disconnectWebsocket() {
-      // if (this.ws) {
-      //   this.ws.close();
-      //   console.log("websocket connection closed");
-      //   this.ws = null;
-      // }
+      if(this.stompClient && this.stompClient.connected) {
+        this.stompClient.unsubscribe(`/topic/${1}`);
+        this.stompClient.disconnect();
+        console.log("websocket connection closed");
+        this.stompClient = null;
+      }
     }
   }
 }
@@ -81,5 +96,17 @@ export default {
   overflow-y: auto;
   border: 5px solid #ddd;
   margin-bottom: 10px;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+}
+
+.chat-message-me{
+  text-align: left;
+}
+
+.chat-message-other {
+  text-align: right;
 }
 </style>

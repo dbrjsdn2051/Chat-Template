@@ -9,7 +9,9 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
-class StompWebSocketConfig : WebSocketMessageBrokerConfigurer {
+class StompWebSocketConfig(
+    private val stompHandler: StompHandler
+) : WebSocketMessageBrokerConfigurer {
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint("/connect").setAllowedOrigins("http://localhost:3000").withSockJS()
@@ -20,4 +22,7 @@ class StompWebSocketConfig : WebSocketMessageBrokerConfigurer {
             .enableSimpleBroker("/topic")
     }
 
+    override fun configureClientInboundChannel(registration: ChannelRegistration) {
+        registration.interceptors(stompHandler)
+    }
 }

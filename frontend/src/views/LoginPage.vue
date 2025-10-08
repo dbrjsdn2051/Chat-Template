@@ -19,6 +19,7 @@
 
 <script>
 import axios from "axios";
+import {jwtDecode} from "jwt-decode";
 
 export default {
   data() {
@@ -36,6 +37,11 @@ export default {
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/member/doLogin`, data)
           .then(res => {
             console.log(res.data.token);
+            const token = res.data.token;
+            const role = jwtDecode(token).role;
+            const email = jwtDecode(token).sub;
+            localStorage.setItem('role', role);
+            localStorage.setItem('email', email);
             localStorage.setItem('token', res.data.token)
           });
       window.location.reload();

@@ -1,17 +1,18 @@
 package com.example.chatserver.chat.controller
 
+import com.example.chatserver.chat.controller.dto.ChatMessageReqDto
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
-import org.springframework.messaging.handler.annotation.SendTo
+import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.stereotype.Controller
 
 @Controller
-class StompController {
-
+class StompController(
+    private val messageTemplate: SimpMessageSendingOperations
+) {
     @MessageMapping("/{roomId}")
-    @SendTo("/topic/{roomId}")
-    fun sendMessage(@DestinationVariable roomId: Long, message: String) : String{
-        println("message: $message")
-        return message;
+    fun sendMessage(@DestinationVariable roomId: Long, chatMessageReqDto: ChatMessageReqDto) {
+        println("message: ${chatMessageReqDto.message}")
+        messageTemplate.convertAndSend("/topic/$roomId", chatMessageReqDto)
     }
 }
