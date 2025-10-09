@@ -8,8 +8,9 @@
           </v-card-title>
           <v-card-text>
             <div class="chat-box">
-              <div v-for="(msg, index) in messages" :key="index" :class="['chat-message', msg.senderEmail === senderEmail ? 'chat-message-me' : 'chat-message-other']">
-                <strong> {{msg.senderEmail }}: </strong> {{msg.message}}
+              <div v-for="(msg, index) in messages" :key="index"
+                   :class="['chat-message', msg.senderEmail === senderEmail ? 'chat-message-me' : 'chat-message-other']">
+                <strong> {{ msg.senderEmail }}: </strong> {{ msg.message }}
               </div>
             </div>
             <v-text-field v-model="newMessage" label="메시지 입력" @keyup.enter="sendMessage"/>
@@ -24,6 +25,7 @@
 <script>
 import SockJS from 'sockjs-client';
 import Stomp from 'webstomp-client'
+import axios from "axios";
 
 export default {
   data() {
@@ -31,26 +33,30 @@ export default {
       messages: [],
       newMessage: '',
       stompClient: null,
-      token: '' ,
+      token: '',
       senderEmail: null,
       roomId: null,
     }
   },
-  created() {
+  async created() {
     this.senderEmail = localStorage.getItem('email');
     this.token = localStorage.getItem('token');
-    this.connectWebsocket();
     this.roomId = this.$route.params.roomId;
+    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chat/history/${this.roomId}`);
+    this.messages = res.data
+    console.log(this.messages);
+    this.connectWebsocket();
   },
-  beforeRouteLeave(to, from, next){
+  beforeRouteLeave(to, from, next) {
     this.disconnectWebsocket();
+    next();
   },
   beforeUnmount() {
     this.disconnectWebsocket();
   },
   methods: {
     connectWebsocket() {
-      if(this.stompClient && this.stompClient.connected) return;
+      if (this.stompClient && this.stompClient.connected) return;
       const sockJs = new SockJS(`${import.meta.env.VITE_API_BASE_URL}/connect`);
       this.stompClient = Stomp.over(sockJs);
       this.stompClient.connect({
@@ -61,6 +67,8 @@ export default {
           const parsedMessage = JSON.parse(res.body);
           this.messages.push(parsedMessage);
           this.scrollToBottom();
+        }, {
+          Authorization: `Bearer ${this.token}`
         })
       })
     },
@@ -80,7 +88,7 @@ export default {
       })
     },
     disconnectWebsocket() {
-      if(this.stompClient && this.stompClient.connected) {
+      if (this.stompClient && this.stompClient.connected) {
         this.stompClient.unsubscribe(`/topic/${this.roomId}`);
         this.stompClient.disconnect();
         console.log("websocket connection closed");
@@ -104,7 +112,7 @@ export default {
   margin-bottom: 10px;
 }
 
-.chat-message-me{
+.chat-message-me {
   text-align: left;
 }
 

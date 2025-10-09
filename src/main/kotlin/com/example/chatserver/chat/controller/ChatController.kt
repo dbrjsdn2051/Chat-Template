@@ -1,5 +1,6 @@
 package com.example.chatserver.chat.controller
 
+import com.example.chatserver.chat.controller.dto.ChatMessageDto
 import com.example.chatserver.chat.controller.dto.ChatRoomListResDto
 import com.example.chatserver.chat.controller.dto.GroupChatRoomCreateReqDto
 import com.example.chatserver.chat.service.ChatService
@@ -35,8 +36,17 @@ class ChatController(
     }
 
     @PostMapping("/chat/room/group/{roomId}/join")
-    fun joinGroupChatRoom(@PathVariable roomId: Long, authentication: Authentication): ResponseEntity<Unit>{
+    fun joinGroupChatRoom(@PathVariable roomId: Long, authentication: Authentication): ResponseEntity<Unit> {
         chatService.addParticipantToGroupChat(roomId, authentication.name)
         return ResponseEntity.ok().build<Unit>()
+    }
+
+    @GetMapping("/chat/history/{roomId}")
+    fun getChatHistory(
+        @PathVariable roomId: Long,
+        authentication: Authentication
+    ): ResponseEntity<List<ChatMessageDto>> {
+        val chatHistory = chatService.getChatHistory(roomId, authentication.name)
+        return ResponseEntity<List<ChatMessageDto>>(chatHistory, HttpStatus.OK)
     }
 }

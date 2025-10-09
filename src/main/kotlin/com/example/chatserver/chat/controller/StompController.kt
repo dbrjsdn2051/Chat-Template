@@ -1,6 +1,6 @@
 package com.example.chatserver.chat.controller
 
-import com.example.chatserver.chat.controller.dto.ChatMessageReqDto
+import com.example.chatserver.chat.controller.dto.ChatMessageDto
 import com.example.chatserver.chat.service.ChatService
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -13,9 +13,9 @@ class StompController(
     private val chatService: ChatService
 ) {
     @MessageMapping("/{roomId}")
-    fun sendMessage(@DestinationVariable roomId: Long, chatMessageReqDto: ChatMessageReqDto) {
-        println("message: ${chatMessageReqDto.message}")
-        chatService.save(roomId, chatMessageReqDto)
-        messageTemplate.convertAndSend("/topic/$roomId", chatMessageReqDto)
+    fun sendMessage(@DestinationVariable roomId: Long, chatMessageDto: ChatMessageDto) {
+        println("message: ${chatMessageDto.message}")
+        chatService.save(roomId, chatMessageDto)
+        messageTemplate.convertAndSend("/topic/$roomId", chatMessageDto)
     }
 }

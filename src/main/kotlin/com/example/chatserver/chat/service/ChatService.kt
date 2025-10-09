@@ -1,6 +1,6 @@
 package com.example.chatserver.chat.service
 
-import com.example.chatserver.chat.controller.dto.ChatMessageReqDto
+import com.example.chatserver.chat.controller.dto.ChatMessageDto
 import com.example.chatserver.chat.domain.ChatRoom
 import com.example.chatserver.chat.domain.CreateChatMessage
 import com.example.chatserver.chat.domain.CreateChatParticipant
@@ -22,17 +22,17 @@ class ChatService(
     private val readStatusRepository: ReadStatusRepository,
     private val memberRepository: MemberRepository
 ) {
-    fun save(roomId: Long, chatMessageReqDto: ChatMessageReqDto) {
+    fun save(roomId: Long, chatMessageDto: ChatMessageDto) {
         transaction {
             val chatRoom = chatRoomRepository.findById(roomId)
                 ?: throw NoSuchElementException("ChatRoom cannot be found")
-            val member = memberRepository.findByEmail(chatMessageReqDto.senderEmail)
+            val member = memberRepository.findByEmail(chatMessageDto.senderEmail)
                 ?: throw NoSuchElementException("Member cannot be found")
 
             val chatMessage = CreateChatMessage(
                 chatRoomId = chatRoom.id.value,
                 memberId = member.id.value,
-                content = chatMessageReqDto.message
+                content = chatMessageDto.message
             )
             val chatMessageId = chatMessageRepository.save(chatMessage)
             val chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom.id.value)
@@ -73,8 +73,8 @@ class ChatService(
         val member = (memberRepository.findByEmail(senderEmail)
             ?: throw NoSuchElementException("Member cannot be found"))
 
-        require(!chatParticipantRepository.existByMemberWithChatRoom(member.id.value, chatRoom.id.value)) {
-            "exist member in chatroom."
+        if (chatParticipantRepository.existByMemberWithChatRoom(member.id.value, chatRoom.id.value)) {
+            return
         }
 
         chatParticipantRepository.save(
@@ -85,4 +85,29 @@ class ChatService(
         )
     }
 
+    fun getChatHistory(roomId: Long, senderEmail: String): List<ChatMessageDto> {
+        return transaction {
+            val chatRoom =
+                chatRoomRepository.findById(roomId) ?: throw NoSuchElementException("ChatRoom cannot be found")
+            val member =
+                memberRepository.findByEmail(senderEmail) ?: throw NoSuchElementException("Member cannot be found")
+            val roomParticipants = chatParticipantRepository.findByChatRoom(chatRoom.id.value)
+            roomParticipants.find { it.member.id.value == member.id.value }
+                ?: throw NoSuchElementException("Member not in chatroom")
+
+            chatMessageRepository.findByChatRoom(chatRoom.id.value)
+                .map { ChatMessageDto(it.content, it.member.email) }
+        }
+    }
+
+    fun isRoomParticipant(email: String, roomId: Long): Boolean {
+        return transaction {
+            val member = memberRepository.findByEmail(email)
+                ?: throw NoSuchElementException("Member cannot be found")
+            val chatRoom = chatRoomRepository.findById(roomId)
+                ?: throw NoSuchElementException("ChatRoom cannot be found")
+            val chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom.id.value)
+            chatParticipants.find { it.member.id.value == member.id.value } != null
+        }
+    }
 }

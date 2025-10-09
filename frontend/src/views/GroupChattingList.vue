@@ -74,7 +74,7 @@ export default {
     async createChatRoom() {
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chat/room/group/create?roomName=${this.newRoomTitle}`, null)
       this.showCreateRoomModal = false
-      this.loadChatRoom();
+      await this.loadChatRoom();
     },
     async loadChatRoom(){
       axios.get(`${import.meta.env.VITE_API_BASE_URL}/chat/room/group/list`).then(res => {
