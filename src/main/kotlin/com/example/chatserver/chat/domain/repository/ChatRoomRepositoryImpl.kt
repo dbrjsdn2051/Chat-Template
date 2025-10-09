@@ -11,10 +11,10 @@ class ChatRoomRepositoryImpl : ChatRoomRepository {
         ChatRoom.findById(id)
     }
 
-    override fun save(createChatRoom: CreateChatRoom): ChatRoom = transaction{
+    override fun save(createChatRoom: CreateChatRoom): Long = transaction{
         ChatRoom.new {
             this.name = createChatRoom.name
             this.isGroupChat = createChatRoom.isGroupChat
-        }
+        }.id.value
     }
 }

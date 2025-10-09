@@ -15,10 +15,10 @@ class ChatParticipantRepositoryImpl : ChatParticipantRepository {
         ChatParticipant.find { ChatParticipants.chatRoomId eq roomId }.toList()
     }
 
-    override fun save(createChatParticipant: CreateChatParticipant): ChatParticipant = transaction {
+    override fun save(createChatParticipant: CreateChatParticipant): Long = transaction {
         ChatParticipant.new {
             this.chatRoom = ChatRoom[createChatParticipant.chatRoomId]
             this.member = Member[createChatParticipant.memberId]
-        }
+        }.id.value
     }
 }

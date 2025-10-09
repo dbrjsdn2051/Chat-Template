@@ -1,4 +1,4 @@
-package com.example.chatserver.`util `
+package com.example.chatserver.util
 
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.DatabaseConfig

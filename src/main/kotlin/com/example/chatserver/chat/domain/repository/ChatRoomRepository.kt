@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository
 interface ChatRoomRepository {
 
     fun findById(id: Long): ChatRoom?
-    fun save(createChatRoom: CreateChatRoom) : ChatRoom
+    fun save(createChatRoom: CreateChatRoom) : Long
 }

@@ -1,4 +1,4 @@
-package com.example.chatserver.`util `
+package com.example.chatserver.util
 
 import com.example.chatserver.chat.domain.ChatMessages
 import com.example.chatserver.chat.domain.ChatParticipants

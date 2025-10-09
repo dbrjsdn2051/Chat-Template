@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository
 @Repository
 class ChatMessageRepositoryImpl : ChatMessageRepository {
 
-    override fun save(createChatMessage: CreateChatMessage): Long = transaction{
+    override fun save(createChatMessage: CreateChatMessage): Long = transaction {
         ChatMessage.new {
             this.chatRoom = ChatRoom[createChatMessage.chatRoomId]
             this.member = Member[createChatMessage.memberId]

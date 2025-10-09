@@ -44,12 +44,17 @@ class ChatService(
         }
     }
 
-    fun createGroupRoom(roomName: String, senderEmail: String) {
+    fun createGroupRoom(roomName: String, senderEmail: String): Long {
         val member = (memberRepository.findByEmail(senderEmail)
             ?: throw NoSuchElementException("Member cannot be found"))
-        val chatRoom = chatRoomRepository.save(CreateChatRoom(roomName, true))
+        val chatRoomId = chatRoomRepository.save(CreateChatRoom(roomName, true))
 
-        chatParticipantRepository.save(CreateChatParticipant(chatRoomId = chatRoom.id.value, memberId = member.id.value))
+        return chatParticipantRepository.save(
+            CreateChatParticipant(
+                chatRoomId = chatRoomId,
+                memberId = member.id.value
+            )
+        )
     }
 
 }

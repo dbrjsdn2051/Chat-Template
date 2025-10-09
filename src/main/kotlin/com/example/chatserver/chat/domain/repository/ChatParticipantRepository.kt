@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository
 interface ChatParticipantRepository {
 
     fun findByChatRoom(roomId: Long) : List<ChatParticipant>
-    fun save(createChatParticipant: CreateChatParticipant) : ChatParticipant
+    fun save(createChatParticipant: CreateChatParticipant) : Long
 }
