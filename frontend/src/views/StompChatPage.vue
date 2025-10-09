@@ -33,12 +33,14 @@ export default {
       stompClient: null,
       token: '' ,
       senderEmail: null,
+      roomId: null,
     }
   },
   created() {
     this.senderEmail = localStorage.getItem('email');
     this.token = localStorage.getItem('token');
     this.connectWebsocket();
+    this.roomId = this.$route.params.roomId;
   },
   beforeRouteLeave(to, from, next){
     this.disconnectWebsocket();
@@ -55,7 +57,7 @@ export default {
         Authorization: `Bearer ${this.token}`
       }, (frame) => {
         console.log("successfully connected to websocket server")
-        this.stompClient.subscribe(`/topic/${1}`, (res) => {
+        this.stompClient.subscribe(`/topic/${this.roomId}`, (res) => {
           const parsedMessage = JSON.parse(res.body);
           this.messages.push(parsedMessage);
           this.scrollToBottom();
@@ -68,7 +70,7 @@ export default {
         message: this.newMessage,
         senderEmail: this.senderEmail,
       }
-      this.stompClient.send(`/publish/${1}`, JSON.stringify(message));
+      this.stompClient.send(`/publish/${this.roomId}`, JSON.stringify(message));
       this.newMessage = '';
     },
     scrollToBottom() {
@@ -79,7 +81,7 @@ export default {
     },
     disconnectWebsocket() {
       if(this.stompClient && this.stompClient.connected) {
-        this.stompClient.unsubscribe(`/topic/${1}`);
+        this.stompClient.unsubscribe(`/topic/${this.roomId}`);
         this.stompClient.disconnect();
         console.log("websocket connection closed");
         this.stompClient = null;

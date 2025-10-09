@@ -9,4 +9,5 @@ interface ChatParticipantRepository {
 
     fun findByChatRoom(roomId: Long) : List<ChatParticipant>
     fun save(createChatParticipant: CreateChatParticipant) : Long
+    fun existByMemberWithChatRoom(memberId: Long, roomId: Long) : Boolean
 }

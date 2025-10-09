@@ -2,9 +2,9 @@ package com.example.chatserver.chat.domain.repository
 
 import com.example.chatserver.chat.domain.ChatParticipant
 import com.example.chatserver.chat.domain.ChatParticipants
-import com.example.chatserver.chat.domain.ChatRoom
 import com.example.chatserver.chat.domain.CreateChatParticipant
-import com.example.chatserver.domain.Member
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
 
@@ -16,9 +16,14 @@ class ChatParticipantRepositoryImpl : ChatParticipantRepository {
     }
 
     override fun save(createChatParticipant: CreateChatParticipant): Long = transaction {
-        ChatParticipant.new {
-            this.chatRoom = ChatRoom[createChatParticipant.chatRoomId]
-            this.member = Member[createChatParticipant.memberId]
-        }.id.value
+        ChatParticipants.insert {
+            it[chatRoomId] = createChatParticipant.chatRoomId
+            it[memberId] = createChatParticipant.memberId
+        }[ChatParticipants.id].value
+    }
+
+    override fun existByMemberWithChatRoom(memberId: Long, roomId: Long): Boolean = transaction {
+        ChatParticipant.find { (ChatParticipants.memberId eq memberId) and (ChatParticipants.chatRoomId eq roomId) }
+            .limit(1).empty().not()
     }
 }

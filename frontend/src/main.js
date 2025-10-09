@@ -16,5 +16,4 @@ axios.interceptors.request.use(config => {
 
 app.use(router)
 app.use(vuetify)
-app.use(axios)
 app.mount("#app")

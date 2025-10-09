@@ -9,4 +9,5 @@ interface ChatRoomRepository {
 
     fun findById(id: Long): ChatRoom?
     fun save(createChatRoom: CreateChatRoom) : Long
+    fun findByIsGroupTrue() : List<ChatRoom>
 }
