@@ -1,6 +1,7 @@
 package com.example.chatserver.chat.service
 
 import com.example.chatserver.chat.controller.dto.ChatMessageDto
+import com.example.chatserver.chat.controller.dto.MyChatListResDto
 import com.example.chatserver.chat.domain.ChatRoom
 import com.example.chatserver.chat.domain.CreateChatMessage
 import com.example.chatserver.chat.domain.CreateChatParticipant
@@ -108,6 +109,40 @@ class ChatService(
                 ?: throw NoSuchElementException("ChatRoom cannot be found")
             val chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom.id.value)
             chatParticipants.find { it.member.id.value == member.id.value } != null
+        }
+    }
+
+    fun messageRead(roomId: Long, email: String) {
+        val chatRoom = chatRoomRepository.findById(roomId) ?: throw NoSuchElementException("ChatRoom cannot be found")
+        val member = memberRepository.findByEmail(email) ?: throw NoSuchElementException("Member cannot be found")
+        readStatusRepository.markAsRead(chatRoom.id.value, member.id.value)
+    }
+
+    fun getMyChatRooms(email: String) : List<MyChatListResDto>{
+        return transaction {
+        val member = memberRepository.findByEmail(email) ?: throw NoSuchElementException("Member cannot be found")
+            chatParticipantRepository.findAllByMember(member.id.value)
+            .map {
+                MyChatListResDto(
+                it.chatRoom.id.value,
+                it.chatRoom.name,
+                it.chatRoom.isGroupChat,
+                readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(it.chatRoom.id.value, it.member.id.value)
+                )
+            }
+        }
+    }
+
+    fun leaveGroupChatRoom(roomId: Long, email: String) {
+        val chatRoom = chatRoomRepository.findById(roomId) ?: throw NoSuchElementException("ChatRoom cannot be found")
+        val member = memberRepository.findByEmail(email) ?: throw NoSuchElementException("Member cannot be found")
+        require(chatRoom.isGroupChat) { "This is not group chat room." }
+        chatParticipantRepository.findByChatRoomAndMember(chatRoom.id.value, member.id.value)?.let {
+            chatParticipantRepository.delete(it.id.value)
+        }
+
+        chatParticipantRepository.findByChatRoom(chatRoom.id.value).isEmpty().let {
+            chatRoomRepository.delete(chatRoom.id.value)
         }
     }
 }

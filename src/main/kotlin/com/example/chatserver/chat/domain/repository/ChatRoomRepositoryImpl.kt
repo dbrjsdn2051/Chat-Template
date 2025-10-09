@@ -23,4 +23,8 @@ class ChatRoomRepositoryImpl : ChatRoomRepository {
     override fun findByIsGroupTrue(): List<ChatRoom> = transaction {
         ChatRoom.find { ChatRooms.isGroupChat eq true }.toList()
     }
+
+    override fun delete(id: Long) : Unit = transaction {
+        ChatRoom.findById(id)?.delete()
+    }
 }

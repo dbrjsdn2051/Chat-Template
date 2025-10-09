@@ -3,10 +3,12 @@ package com.example.chatserver.chat.controller
 import com.example.chatserver.chat.controller.dto.ChatMessageDto
 import com.example.chatserver.chat.controller.dto.ChatRoomListResDto
 import com.example.chatserver.chat.controller.dto.GroupChatRoomCreateReqDto
+import com.example.chatserver.chat.controller.dto.MyChatListResDto
 import com.example.chatserver.chat.service.ChatService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -49,4 +51,26 @@ class ChatController(
         val chatHistory = chatService.getChatHistory(roomId, authentication.name)
         return ResponseEntity<List<ChatMessageDto>>(chatHistory, HttpStatus.OK)
     }
+
+    @PostMapping("/chat/room/{roomId}/read")
+    fun messageRead(
+        @PathVariable roomId: Long,
+        authentication: Authentication
+    ): ResponseEntity<Unit> {
+        chatService.messageRead(roomId, authentication.name)
+        return ResponseEntity.ok().build<Unit>()
+    }
+
+    @GetMapping("/chat/my/rooms")
+    fun getMyChatRooms(authentication: Authentication) : ResponseEntity<List<MyChatListResDto>>{
+        val mychatListResDtos = chatService.getMyChatRooms(authentication.name)
+        return ResponseEntity<List<MyChatListResDto>>(mychatListResDtos, HttpStatus.OK)
+    }
+
+    @DeleteMapping("/chat/room/{roomId}/leave")
+    fun leaveGroupChatRoom(@PathVariable roomId: Long, authentication: Authentication): ResponseEntity<Unit> {
+        chatService.leaveGroupChatRoom(roomId, authentication.name)
+        return ResponseEntity.ok().build<Unit>()
+    }
+
 }
