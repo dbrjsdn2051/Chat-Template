@@ -15,9 +15,14 @@ class ChatRoom(id: EntityID<Long>) : LongEntity(id), Auditable {
     companion object : LongEntityClass<ChatRoom>(ChatRooms)
 
 
-    val name by ChatRooms.name
-    val isGroupChat by ChatRooms.isGroupChat
+    var name by ChatRooms.name
+    var isGroupChat by ChatRooms.isGroupChat
     override var createdAt by ChatRooms.createdAt
     override var updatedAt by ChatRooms.updatedAt
 }
+
+data class CreateChatRoom(
+    val name: String,
+    val isGroupChat: Boolean = false
+)
 

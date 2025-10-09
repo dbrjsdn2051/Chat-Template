@@ -21,8 +21,8 @@ interface Auditable {
 }
 
 abstract class BaseTable(name: String) : LongIdTable(name) {
-    val createdAt = datetime("created_at")
-    val updatedAt = datetime("updated_at")
+    val createdAt = datetime("created_at").clientDefault { LocalDateTime.now() }
+    val updatedAt = datetime("updated_at").clientDefault { LocalDateTime.now() }
 }
 
 

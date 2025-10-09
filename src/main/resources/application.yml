@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/chatdb?useSSL=false
+    url: jdbc:mysql://localhost:3306/chatdb?useSSL=false&logger=com.mysql.cj.log.Slf4JLogger&profileSQL=true
     username: root
     password: 1234
 
@@ -14,6 +14,9 @@ spring:
       host: localhost
       port: 6379
 
+logging:
+  level:
+    Exposed: DEBUG
 
 jwt:
   secretKey: M2Y4ZDJlNzFiYzRhNTZkOGU5ZjBhM2I3YzVkNmU4ZjFhMmI0YzZkOGUwZjJhNGI2YzhlMGYyYTRiNmM4

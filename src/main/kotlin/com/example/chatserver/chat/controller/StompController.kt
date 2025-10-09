@@ -15,6 +15,7 @@ class StompController(
     @MessageMapping("/{roomId}")
     fun sendMessage(@DestinationVariable roomId: Long, chatMessageReqDto: ChatMessageReqDto) {
         println("message: ${chatMessageReqDto.message}")
+        chatService.save(roomId, chatMessageReqDto)
         messageTemplate.convertAndSend("/topic/$roomId", chatMessageReqDto)
     }
 }
