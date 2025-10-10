@@ -22,4 +22,8 @@ class MemberRepositoryImpl : MemberRepository {
     override fun findAll(): List<Member> = transaction {
         Member.all().toList()
     }
+
+    override fun findById(memberId: Long): Member? = transaction{
+        Member.findById(memberId)
+    }
 }

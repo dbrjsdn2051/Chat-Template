@@ -74,6 +74,29 @@ class ChatService(
         val member = (memberRepository.findByEmail(senderEmail)
             ?: throw NoSuchElementException("Member cannot be found"))
 
+        if (chatRoom.isGroupChat.not()) {
+            throw IllegalArgumentException("This is not group chat room.")
+        }
+
+        if (chatParticipantRepository.existByMemberWithChatRoom(member.id.value, chatRoom.id.value)) {
+            return
+        }
+
+        chatParticipantRepository.save(
+            CreateChatParticipant(
+                chatRoomId = chatRoom.id.value,
+                memberId = member.id.value
+            )
+        )
+    }
+
+    fun addParticipantChat(roomId: Long, senderEmail: String) {
+        val chatRoom = (chatRoomRepository.findById(roomId)
+            ?: throw NoSuchElementException("ChatRoom cannot be found"))
+
+        val member = (memberRepository.findByEmail(senderEmail)
+            ?: throw NoSuchElementException("Member cannot be found"))
+
         if (chatParticipantRepository.existByMemberWithChatRoom(member.id.value, chatRoom.id.value)) {
             return
         }
@@ -118,18 +141,17 @@ class ChatService(
         readStatusRepository.markAsRead(chatRoom.id.value, member.id.value)
     }
 
-    fun getMyChatRooms(email: String) : List<MyChatListResDto>{
+    fun getMyChatRooms(email: String): List<MyChatListResDto> {
         return transaction {
-        val member = memberRepository.findByEmail(email) ?: throw NoSuchElementException("Member cannot be found")
+            val member = memberRepository.findByEmail(email) ?: throw NoSuchElementException("Member cannot be found")
             chatParticipantRepository.findAllByMember(member.id.value)
-            .map {
-                MyChatListResDto(
-                it.chatRoom.id.value,
-                it.chatRoom.name,
-                it.chatRoom.isGroupChat,
-                readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(it.chatRoom.id.value, it.member.id.value)
-                )
-            }
+                .map {
+                    val readCount = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(
+                        it.chatRoom.id.value,
+                        it.member.id.value
+                    )
+                    MyChatListResDto.of(it, readCount)
+                }
         }
     }
 
@@ -144,5 +166,22 @@ class ChatService(
         if (chatParticipantRepository.findByChatRoom(chatRoom.id.value).isEmpty()) {
             chatRoomRepository.delete(chatRoom.id.value)
         }
+    }
+
+    fun getOrCreatePrivateRoom(memberId: Long, senderEmail: String): Long {
+        val otherMember =
+            memberRepository.findByEmail(senderEmail) ?: throw NoSuchElementException("Member cannot be found")
+        val member = memberRepository.findById(memberId) ?: throw NoSuchElementException("Member cannot be found")
+
+        require(otherMember.id.value != member.id.value){
+            "You cannot create chat room with yourself."
+        }
+
+        chatParticipantRepository.findExistingPrivateRoom(otherMember.id.value, member.id.value)?.let { return it}
+
+        val newChatRoomId = chatRoomRepository.save(CreateChatRoom("${member.name} and ${otherMember.name}", false))
+        addParticipantChat(newChatRoomId, member.email)
+        addParticipantChat(newChatRoomId, otherMember.email)
+        return newChatRoomId
     }
 }

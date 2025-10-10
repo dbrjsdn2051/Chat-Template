@@ -2,9 +2,15 @@ package com.example.chatserver.chat.domain.repository
 
 import com.example.chatserver.chat.domain.ChatParticipant
 import com.example.chatserver.chat.domain.ChatParticipants
+import com.example.chatserver.chat.domain.ChatRooms
 import com.example.chatserver.chat.domain.CreateChatParticipant
+import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
 
@@ -41,5 +47,33 @@ class ChatParticipantRepositoryImpl : ChatParticipantRepository {
 
     override fun delete(chatParticipantId: Long): Unit = transaction {
         ChatParticipant.findById(chatParticipantId)?.delete()
+    }
+
+    override fun findExistingPrivateRoom(
+        otherMemberId: Long,
+        myId: Long
+    ): Long? = transaction {
+        val c1 = ChatParticipants.alias("c1")
+        val c2 = ChatParticipants.alias("c2")
+
+
+        c1.join(
+            otherTable = c2,
+            joinType = JoinType.INNER,
+            onColumn = c1[ChatParticipants.chatRoomId],
+            otherColumn = c2[ChatParticipants.chatRoomId]
+        ).join(
+            otherTable = ChatRooms,
+            joinType = JoinType.INNER,
+            onColumn = c1[ChatParticipants.chatRoomId],
+            otherColumn = ChatRooms.id
+        )
+            .selectAll()
+            .where {
+                (c1[ChatParticipants.memberId] eq otherMemberId) and
+                        (c2[ChatParticipants.memberId] eq myId) and
+                        (ChatRooms.isGroupChat eq false)
+            }
+            .firstOrNull()?.get(c1[ChatParticipants.chatRoomId])?.value
     }
 }

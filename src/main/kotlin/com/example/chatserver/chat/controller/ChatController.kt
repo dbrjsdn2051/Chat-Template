@@ -73,4 +73,10 @@ class ChatController(
         return ResponseEntity.ok().build<Unit>()
     }
 
+    @PostMapping("/chat/room/private/create")
+    fun getOrCreatePrivateRoom(@RequestParam memberId: Long, authentication: Authentication) : ResponseEntity<Long>{
+        val roomId = chatService.getOrCreatePrivateRoom(memberId, authentication.name)
+        return ResponseEntity<Long>(roomId, HttpStatus.OK)
+    }
+
 }

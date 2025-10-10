@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository
 interface ChatRoomRepository {
 
     fun findById(id: Long): ChatRoom?
-    fun save(createChatRoom: CreateChatRoom) : Long
-    fun findByIsGroupTrue() : List<ChatRoom>
-    fun delete(id: Long) : Unit
+    fun save(createChatRoom: CreateChatRoom): Long
+    fun findByIsGroupTrue(): List<ChatRoom>
+    fun delete(id: Long): Unit
 }
