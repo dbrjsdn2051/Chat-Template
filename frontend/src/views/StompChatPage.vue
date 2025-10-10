@@ -87,7 +87,8 @@ export default {
         chatBox.scrollTop = chatBox.scrollHeight;
       })
     },
-    disconnectWebsocket() {
+    async disconnectWebsocket() {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chat/room/${this.roomId}/read`, null, {});
       if (this.stompClient && this.stompClient.connected) {
         this.stompClient.unsubscribe(`/topic/${this.roomId}`);
         this.stompClient.disconnect();

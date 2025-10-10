@@ -141,7 +141,7 @@ class ChatService(
             chatParticipantRepository.delete(it.id.value)
         }
 
-        chatParticipantRepository.findByChatRoom(chatRoom.id.value).isEmpty().let {
+        if (chatParticipantRepository.findByChatRoom(chatRoom.id.value).isEmpty()) {
             chatRoomRepository.delete(chatRoom.id.value)
         }
     }
