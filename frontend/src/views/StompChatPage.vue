@@ -46,6 +46,7 @@ export default {
     this.messages = res.data
     console.log(this.messages);
     this.connectWebsocket();
+    this.scrollToBottom();
   },
   beforeRouteLeave(to, from, next) {
     this.disconnectWebsocket();
@@ -79,6 +80,14 @@ export default {
         senderEmail: this.senderEmail,
       }
       this.stompClient.send(`/publish/${this.roomId}`, JSON.stringify(message));
+
+      // 즉시 화면에 표시 (Optimistic Update)
+      this.messages.push({
+        message: this.newMessage,
+        senderEmail: this.senderEmail,
+      });
+      this.scrollToBottom();
+
       this.newMessage = '';
     },
     scrollToBottom() {
